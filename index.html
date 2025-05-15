@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Birthday Cake with Microphone Blow Detection</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      height: 100vh;
+      background-color: #ffc0cb;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #birthday-cake {
+      position: relative;
+      top: 50px;
+      transition: transform 2s ease-in-out;
+      z-index: 2;
+      transform: scale(0.8); /* Added scaling for mobile */
+    }
+    
+    @media (max-width: 600px) {
+      #birthday-cake {
+        transform: scale(0.6); /* Smaller scaling for very small screens */
+      }
+      .happy-birthday {
+        font-size: 2.5em !important; /* Smaller text for mobile */
+      }
+    }
+
+    #birthday-cake:before {
+      content: "";
+      position: absolute;
+      background-color: #ede0d4;
+      width: 400px;
+      height: 140px;
+      border-radius: 50%;
+      transform: translate(-50%, -10%);
+      box-shadow: inset -2px -5px #e6ccb2;
+    }
+
+    #birthday-cake.move-out {
+      transform: scale(0.8) translateY(200vh); 
+    }
+
+    .happy-birthday {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 4em;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 2px 2px 8px #ff69b4;
+      opacity: 0;
+      z-index: 1;
+      transition: opacity 2s ease-in-out;
+    }
+
+    .happy-birthday.show {
+      opacity: 1;
+    }
+
+    .cake {
+      position: absolute;
+      background-color: #ddb892;
+      width: 350px;
+      height: 130px;
+      transform: translate(-50%, -60%);
+      left: 50%;
+    }
+
+    .cake:before,
+    .cake:after,
+    .middle,
+    .middle:before,
+    .top,
+    .chocs,
+    .candles,
+    .candles:before,
+    .candles:after,
+    .shadows,
+    .shadows:before,
+    .shadows:after {
+      position: absolute;
+    }
+
+    .cake:before,
+    .middle,
+    .middle:before {
+      border-radius: 50% 50% 50% 50% / 0% 0% 100% 100%;
+      width: 350px;
+      height: 50px;
+    }
+
+    .cake:before {
+      content: "";
+      background-color: #ddb892;
+      top: 130px;
+    }
+
+    .cake:after {
+      content: "";
+      background-color: #b08968;
+      width: 350px;
+      height: 30px;
+      top: 50px;
+    }
+
+    .middle {
+      background-color: #b08968;
+      top: 80px;
+      z-index: 1;
+    }
+
+    .middle:before {
+      content: "";
+      background-color: #ddb892;
+      top: -35px;
+    }
+
+    .top {
+      background-color: #7f5539;
+      width: 350px;
+      height: 90px;
+      border-radius: 50%;
+      z-index: 2;
+      top: -45px;
+      box-shadow: inset -5px -1px #fff, inset -70px 2px rgba(255, 255, 255, .1);
+    }
+
+    .chocs {
+      width: 55px;
+      height: 50px;
+      background-color: #7f5539;
+      top: 0;
+      z-index: 1;
+      border-radius: 50% 50% 50% 50% / 0% 0% 100% 100%;
+      box-shadow: 49px 20px #7f5539, 98px 25px #7f5539, 147px 30px #7f5539, 196px 25px #7f5539, 245px 20px #7f5539, 295px 0 #7f5539, 0px 4px #fff, 49px 24px #fff, 98px 29px #fff, 147px 34px #fff, 196px 29px #fff, 245px 24px #fff, 295px 4px #fff;
+    }
+
+    .candles {
+      width: 30px;
+      height: 80px;
+      background-color: #0081a7;
+      top: -160px;
+      left: calc(50% - 15px);
+      box-shadow: 50px 20px #0081a7, -50px 20px #0081a7;
+    }
+
+    .candles:before {
+      content: "";
+      width: 30px;
+      height: 10px;
+      background-color: #0081a7;
+      border-radius: 50%;
+      top: -5px;
+      box-shadow: 0 80px #0081a7, -50px 20px #0081a7, -50px 100px #0081a7, 50px 20px #0081a7, 50px 100px #0081a7, inset 2px -1px #fff;
+    }
+
+    .candles:after {
+      content: "";
+      width: 30px;
+      height: 10px;
+      border-radius: 50%;
+      top: 15px;
+      left: 50px;
+      box-shadow: inset 2px -1px #fff;
+    }
+
+    .shadows {
+      width: 30px;
+      height: 10px;
+      border-radius: 50%;
+      box-shadow: inset 2px -1px #fff;
+      left: -50px;
+      top: 15px;
+    }
+
+    .shadows:before {
+      content: "";
+      background-color: #333;
+      width: 1.5px;
+      height: 15px;
+      left: 14.5px;
+      top: -10px;
+      box-shadow: 50px -20px #333, 100px 0 #333;
+    }
+
+    .shadows:after {
+      content: "";
+      width: 15px;
+      height: 90px;
+      left: 15px;
+      border-radius: 0% 100% 50% 50% / 100% 6% 10% 0%;
+      background-color: rgba(255, 255, 255, .1);
+      box-shadow: 50px -20px rgba(255, 255, 255, .1), 100px 0 rgba(255, 255, 255, .1);
+    }
+
+    .flame,
+    .flame2,
+    .flame3 {
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      transform: rotate(-45deg);
+      z-index: 4;
+      background-color: rgba(252, 191, 73, .8);
+      transition: .5s;
+      animation: flicker 0.2s infinite alternate;
+    }
+
+    @keyframes flicker {
+      0% {
+        transform: scale(1) rotate(-45deg);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.1) rotate(-45deg);
+        opacity: 0.8;
+      }
+      100% {
+        transform: scale(0.9) rotate(-45deg);
+        opacity: 1;
+      }
+    }
+
+    .flame,
+    .flame:before,
+    .flame2,
+    .flame2:before,
+    .flame3,
+    .flame3:before {
+      position: absolute;
+      border-radius: 80% 15% 55% 50% / 55% 15% 80% 50%;
+    }
+
+    .flame {
+      top: -40px;
+    }
+
+    .flame2,
+    .flame3 {
+      top: -20px;
+    }
+
+    .flame2 {
+      left: -50px;
+    }
+
+    .flame3 {
+      left: 50px;
+    }
+
+    .flame:before,
+    .flame2:before,
+    .flame3:before {
+      content: "";
+      background-color: rgba(247, 127, 0, .4);
+      width: 20px;
+      height: 20px;
+      top: 5px;
+      left: 5px;
+    }
+	
+	.balloon {
+      position: absolute;
+      bottom: -120px;
+      width: 100px;
+      height: 110px;
+      border-radius: 50%;
+      opacity: 0;
+      animation: rise 20s linear;
+      animation-fill-mode: forwards;
+      display: none;
+    }
+
+    .balloon::before {
+      content: '';
+      position: absolute;
+      width: 1px;
+      height: 150px;
+      background-color: white;
+      top: 110px;
+      left: 50px;
+    }
+
+    .balloon::after {
+      content: '';
+      position: absolute;
+      border-bottom: 12px solid red;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      top: 109px;
+      left: 41px;
+    }
+
+    @keyframes rise {
+      0% { transform: translateY(0); opacity: 0; }
+      10% { opacity: 1; }
+      100% { transform: translateY(-150vh); opacity: 0.9; } /* Increased distance */
+    }
+
+	
+	
+	
+	
+	.balloon {
+            position: absolute;
+            bottom: -120px;
+            width: 100px;
+            height: 110px;
+            border-radius: 50%;
+            background-color: rgba(192, 1, 5, 0.4);
+            opacity: 0; 
+            animation: rise 6s linear infinite;
+            animation-fill-mode: forwards;
+            display: none;]			
+        }
+        .balloon::before {
+            content: '';
+            position: absolute;
+            width: 1px;
+            height: 150px;
+            background-color: white;
+            top: 110px;
+            left: 50px;
+        }
+        .balloon::after {
+            content: '';
+            position: absolute;
+            border-bottom: 12px solid red;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            top: 109px;
+            left: 41px;
+        }
+
+        /* Balloon styles with staggered positions and delays */
+        .balloon:nth-child(1) {
+            left: 10%;
+            animation-delay: 0.5s;
+        }
+        .balloon:nth-child(2) {
+            left: 25%;
+            background-color: rgba(0, 0, 255, 0.5);
+            animation-delay: 1s;
+        }
+        .balloon:nth-child(2)::after {
+            border-bottom-color: blue;
+        }
+        .balloon:nth-child(3) {
+            left: 40%;
+            background-color: rgba(255, 255, 0, 0.5);
+            animation-delay: 2.5s;
+        }
+        .balloon:nth-child(3)::after {
+            border-bottom-color: yellow;
+        }
+        .balloon:nth-child(4) {
+            left: 55%;
+            background-color: rgba(0, 128, 0, 0.5);
+            animation-delay: 3.5s;
+        }
+        .balloon:nth-child(4)::after {
+            border-bottom-color: green;
+        }
+        .balloon:nth-child(5) {
+            left: 70%;
+            background-color: rgba(192, 1, 5, 0.5);
+            animation-delay: 1.5s;
+        }
+        .balloon:nth-child(6) {
+            left: 85%;
+            background-color: rgba(255, 165, 0, 0.5);
+            animation-delay: 4.5s;
+        }
+        .balloon:nth-child(6)::after {
+            border-bottom-color: orange;
+        }
+        .balloon:nth-child(7) {
+            left: 50%;
+            background-color: rgba(192, 1, 5, 0.5);
+            animation-delay: 2.5s;
+        }
+        .balloon:nth-child(8) {
+            left: 15%;
+            background-color: rgba(192, 1, 5, 0.5);
+            animation-delay: 7.5s;
+        }
+
+        @keyframes rise {
+            0% {
+                transform: translateY(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1; /* Start fading in */
+            }
+            100% {
+                transform: translateY(-120vh);
+                opacity: 0.9;
+            }
+        }
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+    .permission-prompt {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      text-align: center;
+      z-index: 100;
+      max-width: 80%;
+      display: none;
+    }
+
+    .permission-prompt button {
+      background-color: #ff69b4;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      margin-top: 15px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .tap-instruction {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: white;
+      font-size: 18px;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+      z-index: 10;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="happy-birthday" id="birthdayText"><center>Happy Birthday!!</center></div>
+  <div id="birthday-cake">
+    <div class="cake">
+      <div class="middle"></div>
+      <div class="chocs"></div>
+      <div class="top"></div>
+    </div>
+    <div class="candles">
+      <div class="flame" id="flame1"></div>
+      <div class="flame2" id="flame2"></div>
+      <div class="flame3" id="flame3"></div>
+      <div class="shadows"></div>
+    </div>
+  </div>
+
+  <!-- Balloons -->
+  <div class="balloon" style="left:10%; background-color: rgba(255, 0, 0, 0.5);"></div>
+  <div class="balloon" style="left:25%; background-color: rgba(0, 0, 255, 0.5);"></div>
+  <div class="balloon" style="left:40%; background-color: rgba(255, 255, 0, 0.5);"></div>
+     <div class="balloon" style="left:70%; background-color: rgba(255, 255, 0, 0.5);"></div>
+  <div class="balloon" style="left:55%; background-color: rgba(0, 128, 0, 0.5);"></div>
+  <div class="balloon" style="left:72%; background-color: rgba(192, 1, 5, 0.4);"></div>
+      <div class="balloon" style="left:35%; background-color: rgba(255, 0, 0, 0.5);"></div>
+  <div class="balloon" style="left:4%; background-color: rgba(255, 165, 0, 0.5);"></div>
+      <div class="balloon" style="left:73%; background-color: rgba(0, 0, 255, 0.5);"></div>
+  <div class="permission-prompt" id="permissionPrompt">
+    <h3>Microphone Access Needed</h3>
+    <p>To blow out the candles, please allow microphone access.</p>
+    <button id="requestMicBtn">Allow Microphone</button>
+  </div>
+
+  <div class="tap-instruction" id="tapInstruction">Tap on flames to blow out candles</div>
+
+  <script>
+    const flameElements = [
+      document.getElementById('flame1'),
+      document.getElementById('flame2'),
+      document.getElementById('flame3')
+    ];
+    const permissionPrompt = document.getElementById('permissionPrompt');
+    const requestMicBtn = document.getElementById('requestMicBtn');
+    const tapInstruction = document.getElementById('tapInstruction');
+    let extinguished = 0;
+    let audioContext;
+    let analyser;
+    let microphoneAccessGranted = false;
+
+    
+    flameElements.forEach(flame => {
+      flame.addEventListener('click', extinguishNextFlame);
+    });
+
+    function extinguishNextFlame() {
+      if (extinguished < flameElements.length) {
+        flameElements[extinguished].style.opacity = '0';
+        flameElements[extinguished].style.animation = 'none';
+        extinguished++;
+      }
+      if (extinguished === flameElements.length) {
+        triggerCelebration();
+      }
+    }
+
+    function triggerCelebration() {
+      document.getElementById('birthday-cake').classList.add('move-out');
+      document.getElementById('birthdayText').classList.add('show');
+      document.querySelectorAll('.balloon').forEach(balloon => {
+        balloon.style.display = 'block';
+      });
+    }
+
+    async function setupMic() {
+      try {
+        
+        if (audioContext && audioContext.state === 'suspended') {
+          await audioContext.resume();
+        }
+        
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        microphoneAccessGranted = true;
+        permissionPrompt.style.display = 'none';
+        tapInstruction.style.display = 'none';
+        
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const source = audioContext.createMediaStreamSource(stream);
+        analyser = audioContext.createAnalyser();
+        source.connect(analyser);
+        analyser.fftSize = 256;
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        let blowPower = 0;
+
+        function detectBlow() {
+          if (!analyser) return;
+          
+          analyser.getByteFrequencyData(dataArray);
+          const avg = dataArray.reduce((sum, val) => sum + val, 0) / dataArray.length;
+
+          if (avg > 50) {
+            blowPower++;
+            if (blowPower % 15 === 0) {
+              extinguishNextFlame();
+            }
+          }
+
+          if (extinguished < flameElements.length) {
+            requestAnimationFrame(detectBlow);
+          }
+        }
+
+        detectBlow();
+      } catch (err) {
+        console.error('Microphone error:', err);
+        permissionPrompt.style.display = 'block';
+        tapInstruction.style.display = 'block';
+      }
+    }
+
+    requestMicBtn.addEventListener('click', async () => {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+
+  try {
+    await audioContext.resume();
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    microphoneAccessGranted = true;
+    permissionPrompt.style.display = 'none';
+    tapInstruction.style.display = 'none';
+
+    const source = audioContext.createMediaStreamSource(stream);
+    analyser = audioContext.createAnalyser();
+    source.connect(analyser);
+    analyser.fftSize = 256;
+
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    let blowPower = 0;
+
+    function detectBlow() {
+      if (!analyser) return;
+      
+      analyser.getByteFrequencyData(dataArray);
+      const avg = dataArray.reduce((sum, val) => sum + val, 0) / dataArray.length;
+
+      if (avg > 50) {
+        blowPower++;
+        if (blowPower % 15 === 0) {
+          extinguishNextFlame();
+        }
+      }
+
+      if (extinguished < flameElements.length) {
+        requestAnimationFrame(detectBlow);
+      }
+    }
+
+    detectBlow();
+  } catch (err) {
+    console.error('Microphone error:', err);
+    permissionPrompt.style.display = 'block';
+    tapInstruction.style.display = 'block';
+  }
+});
+
+
+
+    document.addEventListener('click', function initAudioContext() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      document.removeEventListener('click', initAudioContext);
+    });
+
+    window.addEventListener('load', function() {
+      setTimeout(() => {
+        if (!microphoneAccessGranted) {
+          setupMic();
+        }
+      }, 1000);
+    });
+  </script>
+</body>
+</html>
