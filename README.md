@@ -25,7 +25,7 @@ The page shows a birthday cake with candles. You can blow out the candles using 
 
 1. **Download or Clone the Repository**
    ```
-   https://github.com/muhammad-mahirr/interactive-birthday-cake-wish.git
+   https://github.com/muhammad-mahirr/interactive-birthday-wish.git
    
 3. **Open the `index.html` File**
 - Just open the HTML file in any modern browser.
